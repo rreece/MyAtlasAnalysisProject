@@ -1,3 +1,8 @@
+// MyAnalysisAlgorithm.h
+// author: Ryan Reece <ryan.reece@cern.ch>
+// created: 2016-02-04
+//=============================================================================
+
 #ifndef MyAnalysisPackage_MyAnalysisAlgorithm_H
 #define MyAnalysisPackage_MyAnalysisAlgorithm_H
 
