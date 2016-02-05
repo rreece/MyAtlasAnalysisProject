@@ -32,6 +32,7 @@
 //-----------------------------------------------------------------------------
 int main( int argc, char* argv[] )
 {
+    std::cout << "--- MyNtupleMaker -------------------------------------------------\n";
     if( argc <= 2 )
     {
         std::cout << "MyNtupleMaker ERROR: Not enough arguments given!!!!\n";
@@ -55,7 +56,7 @@ int main( int argc, char* argv[] )
     //SH::ScanDir().filePattern("DAOD_*.root*").scan(sh, inputFilePath);
 
     TChain chain("CollectionTree");
-    for(int i=2; i<=argc; i++)
+    for(int i=2; i<argc; i++)
     {
         chain.Add(argv[i]);
     }

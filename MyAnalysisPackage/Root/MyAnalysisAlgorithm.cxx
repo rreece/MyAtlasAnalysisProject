@@ -34,7 +34,6 @@
     } while( false ) 
 
 // Helper macro for checking EL::StatusCodes.
-// Stolen from: https://svnweb.cern.ch/trac/atlasoff/browser/PhysicsAnalysis/AnalysisCommon/CPAnalysisExamples/trunk/CPAnalysisExamples/errorcheck.h
 #define CHECK( ARG )                                        \
     do {                                                    \
         if( ARG != EL::StatusCode::SUCCESS ) {              \
@@ -59,12 +58,14 @@ MyAnalysisAlgorithm :: MyAnalysisAlgorithm ()
     // initialization code will go into histInitialize() and
     // initialize().
 
-    c_debug = true;
-    c_output_stream_name = "myoutput";
+    c_debug = false;
+    c_output_stream_name = "output";
     c_output_tree_name = "mytree";
 
     n_events_processed = 0; 
     n_weights_processed = 0.0;
+    n_events_accepted = 0; 
+    n_weights_accepted = 0.0;
 
     h_cutflow = 0;
 }
@@ -110,6 +111,8 @@ EL::StatusCode MyAnalysisAlgorithm :: histInitialize ()
 
     n_events_processed = 0; 
     n_weights_processed = 0.0;
+    n_events_accepted = 0; 
+    n_weights_accepted = 0.0;
 
     // cutflow histogram
     const std::vector<std::string> xlabels = {"all", "GRL", "trigger", "vertex", "quality", "preskim", "skim"};
@@ -172,7 +175,7 @@ EL::StatusCode MyAnalysisAlgorithm :: initialize ()
     xAOD::TEvent* event = wk()->xaodEvent();
 
     // Let's check the number of events in our xAOD
-    Info(FUNC_NAME, "Number of events = %lli", event->getEntries() ); //print long long int
+    Info(FUNC_NAME, "Number of events in the input = %lli", event->getEntries() ); //print long long int
 
     // USER TODO: Add initialization of output trees.
     m_output_tree = new TTree(c_output_tree_name.c_str(), c_output_tree_name.c_str());
@@ -206,13 +209,13 @@ EL::StatusCode MyAnalysisAlgorithm :: execute ()
     CHECK(preprocess_event());
 
     bool passes_skim1 = false;
-    CHECK(check_skim_event(passes_skim1));
+    CHECK(check_preskim_event(passes_skim1));
     if(passes_skim1)
     {
         CHECK(process_event());
 
         bool passes_skim2 = false;
-        CHECK(check_skim_event_after(passes_skim2));
+        CHECK(check_skim_event(passes_skim2));
 
         if(passes_skim2)
             CHECK(write_event()); // write
@@ -259,7 +262,8 @@ EL::StatusCode MyAnalysisAlgorithm :: finalize ()
     // merged.  This is different from histFinalize() in that it only
     // gets called on worker nodes that processed input events.
 
-    xAOD::TEvent* event =wk()->xaodEvent();
+    Info(FUNC_NAME, "Number of events processed = %lli", n_events_processed);
+    Info(FUNC_NAME, "Number of events in output = %lli", n_events_accepted);
 
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);
     return EL::StatusCode::SUCCESS;
@@ -282,7 +286,9 @@ EL::StatusCode MyAnalysisAlgorithm :: histFinalize ()
     // outputs have been merged.  This is different from finalize() in
     // that it gets called on all worker nodes regardless of whether
     // they processed input events.
-
+    
+    Info(FUNC_NAME, "MyAnalysisAlgorithm done!");
+    
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);
     return EL::StatusCode::SUCCESS;
 }
@@ -313,6 +319,8 @@ EL::StatusCode MyAnalysisAlgorithm :: preprocess_event()
     const char *FUNC_NAME = "preprocess_event";
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
+    n_events_processed++;
+    n_weights_processed += 1.0; // TODO
     h_cutflow->Fill(1); // all
 
     // USER TODO: Write.
@@ -325,36 +333,35 @@ EL::StatusCode MyAnalysisAlgorithm :: preprocess_event()
 
 
 //-----------------------------------------------------------------------------
-EL::StatusCode MyAnalysisAlgorithm :: check_skim_event(bool& passes)
+EL::StatusCode MyAnalysisAlgorithm :: check_preskim_event(bool& passes)
 {
-    const char *FUNC_NAME = "check_skim_event";
+    const char *FUNC_NAME = "check_preskim_event";
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
-    // USER TODO: Write skim conditions.
     // {"all", "GRL", "trigger", "vertex", "quality", "preskim", "skim"};
     passes = false;
 
-    bool passes_grl = true;
+    bool passes_grl = is_mc() || check_grl();
     if(passes_grl)
     {
         h_cutflow->Fill(2); // GRL
 
-        bool passes_trigger = true; // TODO
+        bool passes_trigger = check_trigger();
         if(passes_trigger)
         {
             h_cutflow->Fill(3); // trigger
 
-            bool passes_vertex = true; // TODO
+            bool passes_vertex = check_vertex();
             if(passes_vertex)
             {
                 h_cutflow->Fill(4); // vertex
 
-                bool passes_quality = true; // TODO
+                bool passes_quality = check_quality();
                 if(passes_quality)
                 {
                     h_cutflow->Fill(5); // quality
 
-                    bool passes_preskim = true; // TODO
+                    bool passes_preskim = check_preskim();
                     if(passes_preskim)
                     {
                         h_cutflow->Fill(6); // preskim
@@ -389,13 +396,13 @@ EL::StatusCode MyAnalysisAlgorithm :: process_event()
 
 
 //-----------------------------------------------------------------------------
-EL::StatusCode MyAnalysisAlgorithm :: check_skim_event_after(bool& passes)
+EL::StatusCode MyAnalysisAlgorithm :: check_skim_event(bool& passes)
 {
-    const char *FUNC_NAME = "check_skim_event_after";
+    const char *FUNC_NAME = "check_skim_event";
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
     // USER TODO: Write skim condition.
-    passes = true;
+    passes = check_skim();
 
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s end, passes=%i", FUNC_NAME, passes);
     return EL::StatusCode::SUCCESS;
@@ -411,8 +418,60 @@ EL::StatusCode MyAnalysisAlgorithm :: write_event()
     // Fill the output tree
     m_output_tree->Fill();
 
+    n_events_accepted++;
+    n_weights_accepted += 1.0; // TODO
+
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);
     return EL::StatusCode::SUCCESS;
+}
+
+
+//-----------------------------------------------------------------------------
+bool MyAnalysisAlgorithm :: is_mc()
+{
+    return false; // TODO
+}
+
+
+//-----------------------------------------------------------------------------
+bool MyAnalysisAlgorithm :: check_grl()
+{
+    return true; // TODO
+}
+
+
+//-----------------------------------------------------------------------------
+bool MyAnalysisAlgorithm :: check_trigger()
+{
+    return true; // TODO
+}
+
+
+//-----------------------------------------------------------------------------
+bool MyAnalysisAlgorithm :: check_vertex()
+{
+    return true; // TODO
+}
+
+
+//-----------------------------------------------------------------------------
+bool MyAnalysisAlgorithm :: check_quality()
+{
+    return true; // TODO
+}
+
+
+//-----------------------------------------------------------------------------
+bool MyAnalysisAlgorithm :: check_preskim()
+{
+    return true; // TODO
+}
+
+
+//-----------------------------------------------------------------------------
+bool MyAnalysisAlgorithm :: check_skim()
+{
+    return true; // TODO
 }
 
 

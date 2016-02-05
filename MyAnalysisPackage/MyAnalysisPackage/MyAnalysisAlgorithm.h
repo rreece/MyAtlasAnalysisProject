@@ -56,8 +56,10 @@ class MyAnalysisAlgorithm : public EL::Algorithm
         ///////////////////////////////////////////////////////////////////////
 
         // private counters
-        int                 n_events_processed;  //! 
-        float               n_weights_processed; //! 
+        unsigned long long  n_events_processed;  //! 
+        double              n_weights_processed; //! 
+        unsigned long long  n_events_accepted;   //!
+        double              n_weights_accepted;  //!
 
         // histograms
         TH1F*               h_cutflow;          //!
@@ -69,13 +71,22 @@ class MyAnalysisAlgorithm : public EL::Algorithm
         std::vector<float>  m_ph_pt;            //!
         // USER TODO: Add additional output variables here.
 
-        // private functions
+        // main private functions
         EL::StatusCode clear_output_variables();
         EL::StatusCode preprocess_event();
-        EL::StatusCode check_skim_event(bool& passes);
+        EL::StatusCode check_preskim_event(bool& passes);
         EL::StatusCode process_event();
-        EL::StatusCode check_skim_event_after(bool& passes);
+        EL::StatusCode check_skim_event(bool& passes);
         EL::StatusCode write_event();
+
+        // private helper functions
+        bool is_mc();
+        bool check_grl();
+        bool check_trigger();
+        bool check_vertex();
+        bool check_quality();
+        bool check_preskim();
+        bool check_skim();
 
         // this is needed to distribute the algorithm to the workers
         ClassDef(MyAnalysisAlgorithm, 1);
