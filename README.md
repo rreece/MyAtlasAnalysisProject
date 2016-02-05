@@ -1,4 +1,4 @@
-MyAnalysisPackage
+MyAtlasAnalysisProject
 ===============================================================================
 
 A skeleton package for developing code for analyzing xAOD data in the
@@ -21,12 +21,5 @@ See also
 -------------------------------------------------------------------------------
 
 -   <https://twiki.cern.ch/twiki/bin/view/AtlasComputing/SoftwareTutorialxAODAnalysisInROOT>
-
-
-Misc
--------------------------------------------------------------------------------
-
-    git remote set-url origin ssh://git@github.com/rreece/MyAtlasAnalysisProject.git
-
 
 
