@@ -1,7 +1,7 @@
 MyAtlasAnalysisProject
 ===============================================================================
 
-A skeleton package for developing code for analyzing xAOD data in the
+A skeleton package for developing code for analyzing xAOD data from the
 ATLAS experiment at CERN.
 
 -   author:  Ryan Reece <ryan.reece@cern.ch>
