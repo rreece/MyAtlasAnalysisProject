@@ -11,10 +11,18 @@ ATLAS experiment at CERN.
 Getting started
 -------------------------------------------------------------------------------
 
+Compiling:
+
     source setup.sh
     rc clean
     rc find_packages
     rc compile
+
+Running:
+    
+    mkdir run
+    cd run
+    MyNtupleMaker Zee DAOD_EXOT10.root
 
 
 See also
