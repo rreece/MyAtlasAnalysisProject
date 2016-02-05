@@ -22,25 +22,13 @@
 
 class MyAnalysisAlgorithm : public EL::Algorithm
 {
-    // put your configuration variables here as public variables.
-    // that way they can be set directly from CINT and python.
-    // ------------------------------------------------------------------------
+    //-------------------------------------------------------------------------
     public:
-    // ------------------------------------------------------------------------
-        // float cutValue;
-        TString m_output_stream_name;
-
-        // variables that don't get filled at submission time should be
-        // protected from being sent from the submission node to the worker
-        // node (done by the //!)
-        //public:
-        // Tree *myTree; //!
-        // TH1 *myHist; //!
-
-        // this is a standard constructor
+    
+        // standard constructor
         MyAnalysisAlgorithm ();
 
-        // these are the functions inherited from Algorithm
+        // functions inherited from Algorithm
         virtual EL::StatusCode setupJob (EL::Job& job);
         virtual EL::StatusCode fileExecute ();
         virtual EL::StatusCode histInitialize ();
@@ -51,14 +39,30 @@ class MyAnalysisAlgorithm : public EL::Algorithm
         virtual EL::StatusCode finalize ();
         virtual EL::StatusCode histFinalize ();
 
-    // ------------------------------------------------------------------------
+        // put your configuration variables here as public variables.
+        // that way they can be set directly from CINT and python.
+        // float cutValue;
+        bool        c_debug;
+        TString     c_output_stream_name;
+
+    //-------------------------------------------------------------------------
     private:
-    // ------------------------------------------------------------------------
-        TTree* m_output_tree;         //! 
 
-        int m_ph_n;                   //!
-        std::vector<float> m_ph_pt;   //!
+        ///////////////////////////////////////////////////////////////////////
+        // variables that don't get filled at submission time should be
+        // protected from being sent from the submission node to the worker
+        // node (done by the //!)
+        //public:
+        // Tree *myTree; //!
+        // TH1 *myHist; //!
+        ///////////////////////////////////////////////////////////////////////
+    
+        TTree*              m_output_tree;    //! 
 
+        int                 m_ph_n;           //!
+        std::vector<float>  m_ph_pt;          //!
+
+        // private functions
         void clear_output_vectors();
 
         // this is needed to distribute the algorithm to the workers
