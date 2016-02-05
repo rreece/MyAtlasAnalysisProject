@@ -3,12 +3,14 @@
 // created: 2016-02-04
 //=============================================================================
 
+// this package
+#include "MyAnalysisPackage/MyAnalysisAlgorithm.h"
+
 // std includes
-#include <vector>
+//#include <vector>
 
 // ROOT includes
 #include "TFile.h"
-#include "TTree.h"
 
 // ATLAS framework
 #include "EventLoop/Job.h"
@@ -17,10 +19,8 @@
 #include "EventLoop/OutputStream.h"
 #include "xAODRootAccess/Init.h"
 #include "xAODRootAccess/TEvent.h"
+#include "xAODRootAccess/TStore.h"
 #include "xAODRootAccess/tools/Message.h"
-
-// this package
-#include "MyAnalysisPackage/MyAnalysisAlgorithm.h"
 
 // Helper macro for checking xAOD::TReturnCode return values
 #define EL_RETURN_CHECK( CONTEXT, EXP )                 \
@@ -32,6 +32,18 @@
             return EL::StatusCode::FAILURE;             \
         }                                               \
     } while( false ) 
+
+// Helper macro for checking EL::StatusCodes.
+// Stolen from: https://svnweb.cern.ch/trac/atlasoff/browser/PhysicsAnalysis/AnalysisCommon/CPAnalysisExamples/trunk/CPAnalysisExamples/errorcheck.h
+#define CHECK( ARG )                                        \
+    do {                                                    \
+        if( ARG != EL::StatusCode::SUCCESS ) {              \
+            Error( FUNC_NAME, "Failed to execute: \"%s\"",  \
+                   #ARG );                                  \
+            return EL::StatusCode::FAILURE;                 \
+        }                                                   \
+    } while( false )
+
 
 // this is needed to distribute the algorithm to the workers
 ClassImp(MyAnalysisAlgorithm)
@@ -48,7 +60,13 @@ MyAnalysisAlgorithm :: MyAnalysisAlgorithm ()
     // initialize().
 
     c_debug = true;
-    c_output_stream_name = "output";
+    c_output_stream_name = "myoutput";
+    c_output_tree_name = "mytree";
+
+    n_events_processed = 0; 
+    n_weights_processed = 0.0;
+
+    h_cutflow = 0;
 }
 
 
@@ -70,8 +88,8 @@ EL::StatusCode MyAnalysisAlgorithm :: setupJob (EL::Job& job)
     job.useXAOD ();
     //xAOD::Init();  //call before opening first file
 
-    EL_RETURN_CHECK( "setupJob()", xAOD::Init() ); //call before opening first file
-    EL::OutputStream stream(c_output_stream_name.Data());
+    EL_RETURN_CHECK(FUNC_NAME, xAOD::Init() ); //call before opening first file
+    EL::OutputStream stream(c_output_stream_name.c_str());
     job.outputAdd(stream);
 
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);
@@ -89,7 +107,20 @@ EL::StatusCode MyAnalysisAlgorithm :: histInitialize ()
     // beginning on each worker node, e.g. create histograms and output
     // trees.  This method gets called before any input files are
     // connected.
+
+    n_events_processed = 0; 
+    n_weights_processed = 0.0;
+
+    // cutflow histogram
+    const std::vector<std::string> xlabels = {"all", "GRL", "trigger", "vertex", "quality", "preskim", "skim"};
+    const unsigned int ncut = xlabels.size();
+    h_cutflow = new TH1F("h_cutflow", "h_cutflow", ncut, 0.5, ncut+0.5);
+    for(unsigned int i=1; i<ncut+1; ++i) { h_cutflow->GetXaxis()->SetBinLabel(i, xlabels[i-1].c_str()); }
+    wk()->addOutput(h_cutflow); // adding histogram to the outputstream
+
+    // USER: Add initialization of additional output histograms here.
     
+
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);
     return EL::StatusCode::SUCCESS;
 }
@@ -113,7 +144,7 @@ EL::StatusCode MyAnalysisAlgorithm :: fileExecute ()
 EL::StatusCode MyAnalysisAlgorithm :: changeInput (bool firstFile)
 {
     const char *FUNC_NAME = "changeInput";
-    if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
+    if(c_debug) Info(FUNC_NAME, "DEBUG: %s(%i) start", FUNC_NAME, firstFile);
 
     // Here you do everything you need to do when we change input files,
     // e.g. resetting branch addresses on trees.  If you are using
@@ -140,19 +171,21 @@ EL::StatusCode MyAnalysisAlgorithm :: initialize ()
     // input events.
     xAOD::TEvent* event = wk()->xaodEvent();
 
-    //as a check, let's see the number of events in our xAOD
+    // Let's check the number of events in our xAOD
     Info(FUNC_NAME, "Number of events = %lli", event->getEntries() ); //print long long int
 
-    // >>>>> ADD INITIALIZATION OF OUTPUT TREES AND HISTOGRAMS HERE <<<<
-
-    m_output_tree = new TTree("NPPTree", "NPPTree");
+    // USER TODO: Add initialization of output trees.
+    m_output_tree = new TTree(c_output_tree_name.c_str(), c_output_tree_name.c_str());
 
     // declare branches
     m_output_tree->Branch("ph_n", &m_ph_n);
     m_output_tree->Branch("ph_pt", &m_ph_pt);
-    // TODO: add more variables
+    // USER TODO: Add more variables here.
 
-    m_output_tree->SetDirectory(wk()->getOutputFile(c_output_stream_name.Data()));
+    m_output_tree->SetDirectory(wk()->getOutputFile(c_output_stream_name.c_str()));
+
+    // Just being careful to set the initial values the same as they are reset.
+    CHECK(clear_output_variables());
 
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);
     return EL::StatusCode::SUCCESS;
@@ -169,20 +202,24 @@ EL::StatusCode MyAnalysisAlgorithm :: execute ()
     // events, e.g. read input variables, apply cuts, and fill
     // histograms and trees.  This is where most of your actual analysis
     // code will go.
-
-    xAOD::TEvent* event = wk()->xaodEvent();
-
-    // >>>>> DO EVENT-BY-EVENT WORK HERE <<<<
-    // TODO: do some calculations
     
-    m_ph_n = 1; // TODO
-    m_ph_pt.push_back(100.0); // TODO
+    CHECK(preprocess_event());
 
-    // Fill the output tree
-    m_output_tree->Fill();
+    bool passes_skim1 = false;
+    CHECK(check_skim_event(passes_skim1));
+    if(passes_skim1)
+    {
+        CHECK(process_event());
+
+        bool passes_skim2 = false;
+        CHECK(check_skim_event_after(passes_skim2));
+
+        if(passes_skim2)
+            CHECK(write_event()); // write
+    }
 
     // clean-up
-    clear_output_vectors();
+    CHECK(clear_output_variables());
     xAOD::TStore* store = wk()->xaodStore();
     store->clear();
 
@@ -251,16 +288,131 @@ EL::StatusCode MyAnalysisAlgorithm :: histFinalize ()
 }
 
 
+//============================================================================
+// private methods
+//============================================================================
+
 //-----------------------------------------------------------------------------
-void MyAnalysisAlgorithm :: clear_output_vectors()
+EL::StatusCode MyAnalysisAlgorithm :: clear_output_variables()
 {
-    const char *FUNC_NAME = "clear_output_vectors";
+    const char *FUNC_NAME = "clear_output_variables";
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
-    // TODO: add more vectors
+    // USER TODO: Add more variables here.
+    m_ph_n = 0;
     m_ph_pt.clear();
 
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);
+    return EL::StatusCode::SUCCESS;
+}
+
+
+//-----------------------------------------------------------------------------
+EL::StatusCode MyAnalysisAlgorithm :: preprocess_event()
+{
+    const char *FUNC_NAME = "preprocess_event";
+    if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
+
+    h_cutflow->Fill(1); // all
+
+    // USER TODO: Write.
+    //xAOD::TEvent* event = wk()->xaodEvent();
+
+
+    if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);
+    return EL::StatusCode::SUCCESS;
+}
+
+
+//-----------------------------------------------------------------------------
+EL::StatusCode MyAnalysisAlgorithm :: check_skim_event(bool& passes)
+{
+    const char *FUNC_NAME = "check_skim_event";
+    if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
+
+    // USER TODO: Write skim conditions.
+    // {"all", "GRL", "trigger", "vertex", "quality", "preskim", "skim"};
+    passes = false;
+
+    bool passes_grl = true;
+    if(passes_grl)
+    {
+        h_cutflow->Fill(2); // GRL
+
+        bool passes_trigger = true; // TODO
+        if(passes_trigger)
+        {
+            h_cutflow->Fill(3); // trigger
+
+            bool passes_vertex = true; // TODO
+            if(passes_vertex)
+            {
+                h_cutflow->Fill(4); // vertex
+
+                bool passes_quality = true; // TODO
+                if(passes_quality)
+                {
+                    h_cutflow->Fill(5); // quality
+
+                    bool passes_preskim = true; // TODO
+                    if(passes_preskim)
+                    {
+                        h_cutflow->Fill(6); // preskim
+                        passes = true;
+                    }
+                }
+            }
+        }
+    }
+
+    if(c_debug) Info(FUNC_NAME, "DEBUG: %s end, passes=%i", FUNC_NAME, passes);
+    return EL::StatusCode::SUCCESS;
+}
+
+
+//-----------------------------------------------------------------------------
+EL::StatusCode MyAnalysisAlgorithm :: process_event()
+{
+    const char *FUNC_NAME = "process_event";
+    if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
+
+    // USER TODO: Write.
+    //xAOD::TEvent* event = wk()->xaodEvent();
+    
+    // USER TODO: Do some calculations event-by-event here.
+    m_ph_n = 1; // TODO
+    m_ph_pt.push_back(100.0); // TODO
+    
+    if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);
+    return EL::StatusCode::SUCCESS;
+}
+
+
+//-----------------------------------------------------------------------------
+EL::StatusCode MyAnalysisAlgorithm :: check_skim_event_after(bool& passes)
+{
+    const char *FUNC_NAME = "check_skim_event_after";
+    if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
+
+    // USER TODO: Write skim condition.
+    passes = true;
+
+    if(c_debug) Info(FUNC_NAME, "DEBUG: %s end, passes=%i", FUNC_NAME, passes);
+    return EL::StatusCode::SUCCESS;
+}
+
+
+//-----------------------------------------------------------------------------
+EL::StatusCode MyAnalysisAlgorithm :: write_event()
+{
+    const char *FUNC_NAME = "write_event";
+    if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
+
+    // Fill the output tree
+    m_output_tree->Fill();
+
+    if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);
+    return EL::StatusCode::SUCCESS;
 }
 
 

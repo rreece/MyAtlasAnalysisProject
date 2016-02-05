@@ -1,4 +1,4 @@
-// MyTreeMaker.cxx
+// MyNtupleMaker.cxx
 // author: Ryan Reece <ryan.reece@cern.ch>
 // created: 2016-02-04
 //=============================================================================
@@ -34,7 +34,7 @@ int main( int argc, char* argv[] )
 {
     if( argc <= 2 )
     {
-        std::cout << "MyTreeMaker ERROR: Not enough arguments given!!!!\n";
+        std::cout << "MyNtupleMaker ERROR: Not enough arguments given!!!!\n";
         return 0;
     }
 
@@ -42,7 +42,7 @@ int main( int argc, char* argv[] )
     std::string sample_name = argv[1];
 
     // submitDir
-    std::string submitDir = "MyTreeMaker_" + sample_name;
+    std::string submitDir = "MyNtupleMaker_" + sample_name;
 
     // Set up the job for xAOD access:
     xAOD::Init().ignore();
