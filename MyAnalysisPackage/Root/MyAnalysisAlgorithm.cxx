@@ -21,6 +21,7 @@
 #include "xAODRootAccess/TEvent.h"
 #include "xAODRootAccess/TStore.h"
 #include "xAODRootAccess/tools/Message.h"
+#include "xAODEventInfo/EventInfo.h"
 
 // Helper macro for checking xAOD::TReturnCode return values
 #define EL_RETURN_CHECK( CONTEXT, EXP )                 \
@@ -121,8 +122,7 @@ EL::StatusCode MyAnalysisAlgorithm :: histInitialize ()
     for(unsigned int i=1; i<ncut+1; ++i) { h_cutflow->GetXaxis()->SetBinLabel(i, xlabels[i-1].c_str()); }
     wk()->addOutput(h_cutflow); // adding histogram to the outputstream
 
-    // USER: Add initialization of additional output histograms here.
-    
+    // USER: Maybe add initialization of additional output histograms here.
 
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);
     return EL::StatusCode::SUCCESS;
@@ -137,6 +137,8 @@ EL::StatusCode MyAnalysisAlgorithm :: fileExecute ()
 
     // Here you do everything that needs to be done exactly once for every
     // single file, e.g. collect a list of all lumi-blocks processed
+
+    // TODO: initialize and bookkeep metadata
     
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);
     return EL::StatusCode::SUCCESS;
@@ -152,6 +154,8 @@ EL::StatusCode MyAnalysisAlgorithm :: changeInput (bool firstFile)
     // Here you do everything you need to do when we change input files,
     // e.g. resetting branch addresses on trees.  If you are using
     // D3PDReader or a similar service this method is not needed.
+    
+    // TODO: bookkeep metadata
     
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);
     return EL::StatusCode::SUCCESS;
@@ -177,10 +181,10 @@ EL::StatusCode MyAnalysisAlgorithm :: initialize ()
     // Let's check the number of events in our xAOD
     Info(FUNC_NAME, "Number of events in the input = %lli", event->getEntries() ); //print long long int
 
-    // USER TODO: Add initialization of output trees.
+    // Initialize output trees.
     m_output_tree = new TTree(c_output_tree_name.c_str(), c_output_tree_name.c_str());
 
-    // declare branches
+    // Declare branches
     m_output_tree->Branch("ph_n", &m_ph_n);
     m_output_tree->Branch("ph_pt", &m_ph_pt);
     // USER TODO: Add more variables here.
@@ -212,6 +216,7 @@ EL::StatusCode MyAnalysisAlgorithm :: execute ()
     CHECK(check_preskim_event(passes_skim1));
     if(passes_skim1)
     {
+        // TODO: for-loop over systematics writing separate ntuples.
         CHECK(process_event());
 
         bool passes_skim2 = false;
@@ -262,9 +267,6 @@ EL::StatusCode MyAnalysisAlgorithm :: finalize ()
     // merged.  This is different from histFinalize() in that it only
     // gets called on worker nodes that processed input events.
 
-    Info(FUNC_NAME, "Number of events processed = %lli", n_events_processed);
-    Info(FUNC_NAME, "Number of events in output = %lli", n_events_accepted);
-
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);
     return EL::StatusCode::SUCCESS;
 }
@@ -288,7 +290,11 @@ EL::StatusCode MyAnalysisAlgorithm :: histFinalize ()
     // they processed input events.
     
     Info(FUNC_NAME, "MyAnalysisAlgorithm done!");
+    Info(FUNC_NAME, "Number of events processed = %lli", n_events_processed);
+    Info(FUNC_NAME, "Number of events in output = %lli", n_events_accepted);
     
+    // TODO: Print h_cutflow
+
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);
     return EL::StatusCode::SUCCESS;
 }
@@ -401,8 +407,11 @@ EL::StatusCode MyAnalysisAlgorithm :: check_skim_event(bool& passes)
     const char *FUNC_NAME = "check_skim_event";
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
-    // USER TODO: Write skim condition.
     passes = check_skim();
+    if(passes)
+    {
+        h_cutflow->Fill(7); // skim
+    }
 
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s end, passes=%i", FUNC_NAME, passes);
     return EL::StatusCode::SUCCESS;
@@ -429,6 +438,15 @@ EL::StatusCode MyAnalysisAlgorithm :: write_event()
 //-----------------------------------------------------------------------------
 bool MyAnalysisAlgorithm :: is_mc()
 {
+    xAOD::TEvent* event = wk()->xaodEvent();
+    
+    const xAOD::EventInfo* eventInfo = 0;
+    EL_RETURN_CHECK("execute",event->retrieve( eventInfo, "EventInfo"));  
+
+    // check if the event is Monte Carlo
+    if( eventInfo->eventType(xAOD::EventInfo::IS_SIMULATION) )
+        return true;
+
     return false; // TODO
 }
 
