@@ -6,6 +6,7 @@
 #ifndef MyAnalysisPackage_MyAnalysisMacros_H
 #define MyAnalysisPackage_MyAnalysisMacros_H
 
+#include "xAODRootAccess/tools/Message.h"
 
 // Helper macro for checking xAOD::TReturnCode return values
 #define EL_RETURN_CHECK( CONTEXT, EXP )                 \
@@ -28,5 +29,7 @@
         }                                                   \
     } while( false )
 
+// Helper macro for checking for non-zero before delete
+#define SAFE_DELETE(x) { if(x) { delete x; x=0; } }
 
 #endif

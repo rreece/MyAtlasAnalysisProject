@@ -12,6 +12,8 @@
 // ROOT includes
 
 // ATLAS framework
+#include "xAODEgamma/PhotonContainer.h"
+#include "xAODEgamma/PhotonAuxContainer.h"
 
 // this package
 #include "MyAnalysisPackage/MyAnalysisBaseAlgorithm.h"
@@ -30,17 +32,24 @@ class MyAnalysisAlgorithm : public MyAnalysisBaseAlgorithm
         // methods classes deriving from MyAnalysisBaseAlgorithm must implement
         virtual EL::StatusCode user_initialize_hists();
         virtual EL::StatusCode user_declare_branches(TTree* tree);
+        virtual EL::StatusCode user_clear_cache_variables();
         virtual EL::StatusCode user_clear_output_variables();
+        virtual EL::StatusCode user_initialize();
         virtual EL::StatusCode user_preprocess_event();
         virtual EL::StatusCode user_process_event();
+        virtual EL::StatusCode user_finalize();
         virtual bool user_check_preskim();
         virtual bool user_check_skim();
 
         // other private variables and caches (m_*)
+        xAOD::PhotonContainer*      m_photons;
+        xAOD::ShallowAuxContainer*  m_photons_aux;
 
         // varialbles for the output ntuple (o_*)
         int                 o_ph_n;             //!
         std::vector<float>  o_ph_pt;            //!
+        std::vector<float>  o_ph_eta;           //!
+        std::vector<float>  o_ph_phi;           //!
         // USER TODO: Add additional output variables here.
 
         // this is needed to distribute the algorithm to the workers

@@ -15,6 +15,7 @@
 #include "TFile.h"
 #include "TTree.h"
 #include "TH1D.h"
+#include "TSystem.h"
 
 // ATLAS framework
 #include "EventLoop/Job.h"
@@ -24,8 +25,8 @@
 #include "xAODRootAccess/Init.h"
 #include "xAODRootAccess/TEvent.h"
 #include "xAODRootAccess/TStore.h"
-#include "xAODRootAccess/tools/Message.h"
 #include "xAODEventInfo/EventInfo.h"
+#include "SUSYTools/SUSYObjDef_xAOD.h"
 
 
 // this is needed to distribute the algorithm to the workers
@@ -54,6 +55,8 @@ MyAnalysisBaseAlgorithm :: MyAnalysisBaseAlgorithm ()
     h_cutflow       = 0;
 
     m_output_tree   = 0;
+    m_SUSYTool      = 0;
+
     m_event         = 0;
     m_store         = 0;
     m_event_info    = 0;
@@ -182,6 +185,10 @@ EL::StatusCode MyAnalysisBaseAlgorithm :: initialize ()
     CHECK(FUNC_NAME, clear_cache_variables());
     CHECK(FUNC_NAME, clear_output_variables());
 
+    CHECK(FUNC_NAME, setup_susy_tools());
+
+    CHECK(FUNC_NAME, user_initialize());
+
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);
     return EL::StatusCode::SUCCESS;
 }
@@ -255,6 +262,9 @@ EL::StatusCode MyAnalysisBaseAlgorithm :: finalize ()
     // submission node after all your histogram outputs have been
     // merged.  This is different from histFinalize() in that it only
     // gets called on worker nodes that processed input events.
+    
+    CHECK(FUNC_NAME, user_finalize());
+    SAFE_DELETE(m_SUSYTool);
 
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);
     return EL::StatusCode::SUCCESS;
@@ -327,6 +337,48 @@ bool MyAnalysisBaseAlgorithm :: is_mc()
 //============================================================================
 
 //-----------------------------------------------------------------------------
+EL::StatusCode MyAnalysisBaseAlgorithm :: setup_susy_tools()
+{
+    const char *FUNC_NAME = "setup_susy_tools";
+    if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
+
+    Info(FUNC_NAME, "Setting up SUSYTools...");
+
+    m_SUSYTool = new ST::SUSYObjDef_xAOD("SUSYObjDef_xAOD");
+    EL_RETURN_CHECK(FUNC_NAME, m_SUSYTool->setProperty( "ConfigFile",  "$ROOTCOREBIN/data/MyAnalysisPackage/SUSYTools_MyAnalysis.conf" ));
+    m_SUSYTool->msg().setLevel( MSG::ERROR);  // MSG::ERROR MSG::DEBUG
+
+    bool isAFII=false;
+    ST::SettingDataSource data_source = is_mc() ? (isAFII ? ST::AtlfastII : ST::FullSim) : ST::Data;
+    EL_RETURN_CHECK(FUNC_NAME, m_SUSYTool->setProperty("DataSource", data_source ));
+    EL_RETURN_CHECK(FUNC_NAME, m_SUSYTool->setProperty("DoPhotonOR", true));
+    //CHECK(m_SUSYTool->setProperty("METTauTerm", ""));
+
+    std::string common_path = gSystem->ExpandPathName("$ROOTCOREBIN/data/MyAnalysisPackage/");
+    std::vector<std::string> lcalc_files;
+    lcalc_files.push_back( common_path + "ilumicalc_histograms_HLT_2g50_loose_276262-282421.root" );
+
+    std::vector<std::string> prw_files;
+    prw_files.push_back( common_path + "merged_prw.root" );
+
+    EL_RETURN_CHECK(FUNC_NAME, m_SUSYTool->setProperty("PRWDefaultChannel", 407013 ));
+    EL_RETURN_CHECK(FUNC_NAME, m_SUSYTool->setProperty("PRWConfigFiles", prw_files ));
+    EL_RETURN_CHECK(FUNC_NAME, m_SUSYTool->setProperty("PRWLumiCalcFiles", lcalc_files ));
+
+    if(m_SUSYTool->initialize().isFailure()) {
+        Error(FUNC_NAME, "Failed to initialise tools in SUSYToolsInit()..." );
+        Error(FUNC_NAME, "Exiting..." );
+        return EL::StatusCode::FAILURE;
+    } else {
+        Info(FUNC_NAME,"SUSYToolsInit with success!!... " );
+    }
+
+    if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);
+    return EL::StatusCode::SUCCESS;
+}
+
+
+//-----------------------------------------------------------------------------
 EL::StatusCode MyAnalysisBaseAlgorithm :: clear_cache_variables()
 {
     const char *FUNC_NAME = "clear_cache_variables";
@@ -336,6 +388,8 @@ EL::StatusCode MyAnalysisBaseAlgorithm :: clear_cache_variables()
     m_event         = 0;
     m_store         = 0;
     m_event_info    = 0;
+
+    CHECK(FUNC_NAME, user_clear_cache_variables());
 
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);
     return EL::StatusCode::SUCCESS;
