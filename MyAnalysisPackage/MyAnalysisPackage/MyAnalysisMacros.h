@@ -19,10 +19,10 @@
     } while( false ) 
 
 // Helper macro for checking EL::StatusCodes.
-#define CHECK( ARG )                                        \
+#define CHECK( CONTEXT, ARG )                                        \
     do {                                                    \
         if( ARG != EL::StatusCode::SUCCESS ) {              \
-            Error( FUNC_NAME, "Failed to execute: \"%s\"",  \
+            Error( CONTEXT, "Failed to execute: \"%s\"",  \
                    #ARG );                                  \
             return EL::StatusCode::FAILURE;                 \
         }                                                   \

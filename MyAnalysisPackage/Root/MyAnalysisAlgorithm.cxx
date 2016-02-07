@@ -179,8 +179,8 @@ EL::StatusCode MyAnalysisAlgorithm :: initialize ()
     m_output_tree->SetDirectory(wk()->getOutputFile(c_output_stream_name.c_str()));
 
     // Just being careful to set the initial values the same as they are reset.
-    CHECK(clear_cache_variables());
-    CHECK(clear_output_variables());
+    CHECK(FUNC_NAME, clear_cache_variables());
+    CHECK(FUNC_NAME, clear_output_variables());
 
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);
     return EL::StatusCode::SUCCESS;
@@ -198,25 +198,25 @@ EL::StatusCode MyAnalysisAlgorithm :: execute ()
     // histograms and trees.  This is where most of your actual analysis
     // code will go.
     
-    CHECK(preprocess_event());
+    CHECK(FUNC_NAME, preprocess_event());
 
     bool passes_skim1 = false;
-    CHECK(check_preskim_event(passes_skim1));
+    CHECK(FUNC_NAME, check_preskim_event(passes_skim1));
     if(passes_skim1)
     {
         // TODO: for-loop over systematics writing separate ntuples.
-        CHECK(process_event());
+        CHECK(FUNC_NAME, process_event());
 
         bool passes_skim2 = false;
-        CHECK(check_skim_event(passes_skim2));
+        CHECK(FUNC_NAME, check_skim_event(passes_skim2));
 
         if(passes_skim2)
-            CHECK(write_event()); // write
+            CHECK(FUNC_NAME, write_event()); // write
     }
 
     // clean-up
-    CHECK(clear_cache_variables());
-    CHECK(clear_output_variables());
+    CHECK(FUNC_NAME, clear_cache_variables());
+    CHECK(FUNC_NAME, clear_output_variables());
     xAOD::TStore* store = wk()->xaodStore();
     store->clear();
 
