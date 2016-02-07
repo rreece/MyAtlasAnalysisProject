@@ -81,7 +81,7 @@ EL::StatusCode MyAnalysisBaseAlgorithm :: setupJob (EL::Job& job)
     job.useXAOD ();
     //xAOD::Init();  //call before opening first file
 
-    EL_RETURN_CHECK(FUNC_NAME, xAOD::Init() ); //call before opening first file
+    AOD_CHECK(FUNC_NAME, xAOD::Init() ); //call before opening first file
     EL::OutputStream stream(c_output_stream_name.c_str());
     job.outputAdd(stream);
 
@@ -114,7 +114,7 @@ EL::StatusCode MyAnalysisBaseAlgorithm :: histInitialize ()
     wk()->addOutput(h_cutflow); // adding histogram to the outputstream
 
     // Initialize additional output histograms
-    CHECK(FUNC_NAME, user_initialize_hists());
+    EL_CHECK(FUNC_NAME, user_initialize_hists());
 
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);
     return EL::StatusCode::SUCCESS;
@@ -177,17 +177,17 @@ EL::StatusCode MyAnalysisBaseAlgorithm :: initialize ()
     m_output_tree = new TTree(c_output_tree_name.c_str(), c_output_tree_name.c_str());
 
     // Declare branches
-    CHECK(FUNC_NAME, user_declare_branches(m_output_tree));
+    EL_CHECK(FUNC_NAME, user_declare_branches(m_output_tree));
 
     m_output_tree->SetDirectory(wk()->getOutputFile(c_output_stream_name.c_str()));
 
     // Just being careful to set the initial values the same as they are reset.
-    CHECK(FUNC_NAME, clear_cache_variables());
-    CHECK(FUNC_NAME, clear_output_variables());
+    EL_CHECK(FUNC_NAME, clear_cache_variables());
+    EL_CHECK(FUNC_NAME, clear_output_variables());
 
-    CHECK(FUNC_NAME, setup_susy_tools());
+    EL_CHECK(FUNC_NAME, setup_susy_tools());
 
-    CHECK(FUNC_NAME, user_initialize());
+    EL_CHECK(FUNC_NAME, user_initialize());
 
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);
     return EL::StatusCode::SUCCESS;
@@ -205,25 +205,25 @@ EL::StatusCode MyAnalysisBaseAlgorithm :: execute ()
     // histograms and trees.  This is where most of your actual analysis
     // code will go.
     
-    CHECK(FUNC_NAME, preprocess_event());
+    EL_CHECK(FUNC_NAME, preprocess_event());
 
     bool passes_skim1 = false;
-    CHECK(FUNC_NAME, check_preskim_event(passes_skim1));
+    EL_CHECK(FUNC_NAME, check_preskim_event(passes_skim1));
     if(passes_skim1)
     {
         // TODO: for-loop over systematics writing separate ntuples.
-        CHECK(FUNC_NAME, process_event());
+        EL_CHECK(FUNC_NAME, process_event());
 
         bool passes_skim2 = false;
-        CHECK(FUNC_NAME, check_skim_event(passes_skim2));
+        EL_CHECK(FUNC_NAME, check_skim_event(passes_skim2));
 
         if(passes_skim2)
-            CHECK(FUNC_NAME, write_event()); // write
+            EL_CHECK(FUNC_NAME, write_event()); // write
     }
 
     // clean-up
-    CHECK(FUNC_NAME, clear_cache_variables());
-    CHECK(FUNC_NAME, clear_output_variables());
+    EL_CHECK(FUNC_NAME, clear_cache_variables());
+    EL_CHECK(FUNC_NAME, clear_output_variables());
     xAOD::TStore* store = wk()->xaodStore();
     store->clear();
 
@@ -263,7 +263,7 @@ EL::StatusCode MyAnalysisBaseAlgorithm :: finalize ()
     // merged.  This is different from histFinalize() in that it only
     // gets called on worker nodes that processed input events.
     
-    CHECK(FUNC_NAME, user_finalize());
+    EL_CHECK(FUNC_NAME, user_finalize());
     SAFE_DELETE(m_SUSYTool);
 
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);
@@ -345,14 +345,14 @@ EL::StatusCode MyAnalysisBaseAlgorithm :: setup_susy_tools()
     Info(FUNC_NAME, "Setting up SUSYTools...");
 
     m_SUSYTool = new ST::SUSYObjDef_xAOD("SUSYObjDef_xAOD");
-    EL_RETURN_CHECK(FUNC_NAME, m_SUSYTool->setProperty( "ConfigFile",  "$ROOTCOREBIN/data/MyAnalysisPackage/SUSYTools_MyAnalysis.conf" ));
+    AOD_CHECK(FUNC_NAME, m_SUSYTool->setProperty( "ConfigFile",  "$ROOTCOREBIN/data/MyAnalysisPackage/SUSYTools_MyAnalysis.conf" ));
     m_SUSYTool->msg().setLevel( MSG::ERROR);  // MSG::ERROR MSG::DEBUG
 
     bool isAFII=false;
     ST::SettingDataSource data_source = is_mc() ? (isAFII ? ST::AtlfastII : ST::FullSim) : ST::Data;
-    EL_RETURN_CHECK(FUNC_NAME, m_SUSYTool->setProperty("DataSource", data_source ));
-    EL_RETURN_CHECK(FUNC_NAME, m_SUSYTool->setProperty("DoPhotonOR", true));
-    //CHECK(m_SUSYTool->setProperty("METTauTerm", ""));
+    AOD_CHECK(FUNC_NAME, m_SUSYTool->setProperty("DataSource", data_source ));
+    AOD_CHECK(FUNC_NAME, m_SUSYTool->setProperty("DoPhotonOR", true));
+    //AOD_CHECK(m_SUSYTool->setProperty("METTauTerm", ""));
 
     std::string common_path = gSystem->ExpandPathName("$ROOTCOREBIN/data/MyAnalysisPackage/");
     std::vector<std::string> lcalc_files;
@@ -361,9 +361,9 @@ EL::StatusCode MyAnalysisBaseAlgorithm :: setup_susy_tools()
     std::vector<std::string> prw_files;
     prw_files.push_back( common_path + "merged_prw.root" );
 
-    EL_RETURN_CHECK(FUNC_NAME, m_SUSYTool->setProperty("PRWDefaultChannel", 407013 ));
-    EL_RETURN_CHECK(FUNC_NAME, m_SUSYTool->setProperty("PRWConfigFiles", prw_files ));
-    EL_RETURN_CHECK(FUNC_NAME, m_SUSYTool->setProperty("PRWLumiCalcFiles", lcalc_files ));
+    AOD_CHECK(FUNC_NAME, m_SUSYTool->setProperty("PRWDefaultChannel", 407013 ));
+    AOD_CHECK(FUNC_NAME, m_SUSYTool->setProperty("PRWConfigFiles", prw_files ));
+    AOD_CHECK(FUNC_NAME, m_SUSYTool->setProperty("PRWLumiCalcFiles", lcalc_files ));
 
     if(m_SUSYTool->initialize().isFailure()) {
         Error(FUNC_NAME, "Failed to initialise tools in SUSYToolsInit()..." );
@@ -389,7 +389,7 @@ EL::StatusCode MyAnalysisBaseAlgorithm :: clear_cache_variables()
     m_store         = 0;
     m_event_info    = 0;
 
-    CHECK(FUNC_NAME, user_clear_cache_variables());
+    EL_CHECK(FUNC_NAME, user_clear_cache_variables());
 
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);
     return EL::StatusCode::SUCCESS;
@@ -402,7 +402,7 @@ EL::StatusCode MyAnalysisBaseAlgorithm :: clear_output_variables()
     const char *FUNC_NAME = "clear_output_variables";
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
-    CHECK(FUNC_NAME, user_clear_output_variables());
+    EL_CHECK(FUNC_NAME, user_clear_output_variables());
 
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);
     return EL::StatusCode::SUCCESS;
@@ -423,9 +423,9 @@ EL::StatusCode MyAnalysisBaseAlgorithm :: preprocess_event()
     m_store = wk()->xaodStore();
     
     // Get EventInfo
-    EL_RETURN_CHECK(FUNC_NAME, m_event->retrieve(m_event_info, "EventInfo"));  
+    AOD_CHECK(FUNC_NAME, m_event->retrieve(m_event_info, "EventInfo"));  
 
-    CHECK(FUNC_NAME, user_preprocess_event());
+    EL_CHECK(FUNC_NAME, user_preprocess_event());
 
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);
     return EL::StatusCode::SUCCESS;
@@ -483,7 +483,7 @@ EL::StatusCode MyAnalysisBaseAlgorithm :: process_event()
     const char *FUNC_NAME = "process_event";
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
-    CHECK(FUNC_NAME, user_process_event());
+    EL_CHECK(FUNC_NAME, user_process_event());
     
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);
     return EL::StatusCode::SUCCESS;

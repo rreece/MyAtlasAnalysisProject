@@ -9,7 +9,7 @@
 #include "xAODRootAccess/tools/Message.h"
 
 // Helper macro for checking xAOD::TReturnCode return values
-#define EL_RETURN_CHECK( CONTEXT, EXP )                 \
+#define AOD_CHECK( CONTEXT, EXP )                       \
     do {                                                \
         if( ! EXP.isSuccess() ){                        \
             Error( CONTEXT,                             \
@@ -20,13 +20,13 @@
     } while( false ) 
 
 // Helper macro for checking EL::StatusCodes.
-#define CHECK( CONTEXT, ARG )                                        \
-    do {                                                    \
-        if( ARG != EL::StatusCode::SUCCESS ) {              \
+#define EL_CHECK( CONTEXT, ARG )                          \
+    do {                                                  \
+        if( ARG != EL::StatusCode::SUCCESS ) {            \
             Error( CONTEXT, "Failed to execute: \"%s\"",  \
-                   #ARG );                                  \
-            return EL::StatusCode::FAILURE;                 \
-        }                                                   \
+                   #ARG );                                \
+            return EL::StatusCode::FAILURE;               \
+        }                                                 \
     } while( false )
 
 // Helper macro for checking for non-zero before delete

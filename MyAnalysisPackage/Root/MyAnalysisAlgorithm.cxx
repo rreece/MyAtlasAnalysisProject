@@ -132,7 +132,7 @@ EL::StatusCode MyAnalysisAlgorithm :: user_process_event()
     // USER TODO: Do some calculations event-by-event here.
     
     if(c_debug) Info(FUNC_NAME, "Getting photons...");
-    EL_RETURN_CHECK(FUNC_NAME, m_SUSYTool->GetPhotons(m_photons, m_photons_aux, false, "Photons"));
+    AOD_CHECK(FUNC_NAME, m_SUSYTool->GetPhotons(m_photons, m_photons_aux, false, "Photons"));
 
     // Filling photon variables
     o_ph_n = 0;
