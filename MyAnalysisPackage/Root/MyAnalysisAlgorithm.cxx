@@ -5,12 +5,15 @@
 
 // this package
 #include "MyAnalysisPackage/MyAnalysisAlgorithm.h"
+#include "MyAnalysisPackage/MyAnalysisMacros.h"
 
 // std includes
 //#include <vector>
 
 // ROOT includes
 #include "TFile.h"
+#include "TTree.h"
+#include "TH1F.h"
 
 // ATLAS framework
 #include "EventLoop/Job.h"
@@ -22,27 +25,6 @@
 #include "xAODRootAccess/TStore.h"
 #include "xAODRootAccess/tools/Message.h"
 #include "xAODEventInfo/EventInfo.h"
-
-// Helper macro for checking xAOD::TReturnCode return values
-#define EL_RETURN_CHECK( CONTEXT, EXP )                 \
-    do {                                                \
-        if( ! EXP.isSuccess() ){                        \
-            Error( CONTEXT,                             \
-                XAOD_MESSAGE( "Failed to execute: %s"), \
-                #EXP );                                 \
-            return EL::StatusCode::FAILURE;             \
-        }                                               \
-    } while( false ) 
-
-// Helper macro for checking EL::StatusCodes.
-#define CHECK( ARG )                                        \
-    do {                                                    \
-        if( ARG != EL::StatusCode::SUCCESS ) {              \
-            Error( FUNC_NAME, "Failed to execute: \"%s\"",  \
-                   #ARG );                                  \
-            return EL::StatusCode::FAILURE;                 \
-        }                                                   \
-    } while( false )
 
 
 // this is needed to distribute the algorithm to the workers
@@ -59,16 +41,21 @@ MyAnalysisAlgorithm :: MyAnalysisAlgorithm ()
     // initialization code will go into histInitialize() and
     // initialize().
 
-    c_debug = false;
+    c_debug              = false;
     c_output_stream_name = "output";
-    c_output_tree_name = "mytree";
+    c_output_tree_name   = "mytree";
 
-    n_events_processed = 0; 
+    n_events_processed  = 0; 
     n_weights_processed = 0.0;
-    n_events_accepted = 0; 
-    n_weights_accepted = 0.0;
+    n_events_accepted   = 0; 
+    n_weights_accepted  = 0.0;
 
-    h_cutflow = 0;
+    h_cutflow       = 0;
+
+    m_output_tree   = 0;
+    m_event         = 0;
+    m_store         = 0;
+    m_event_info    = 0;
 }
 
 
@@ -122,7 +109,7 @@ EL::StatusCode MyAnalysisAlgorithm :: histInitialize ()
     for(unsigned int i=1; i<ncut+1; ++i) { h_cutflow->GetXaxis()->SetBinLabel(i, xlabels[i-1].c_str()); }
     wk()->addOutput(h_cutflow); // adding histogram to the outputstream
 
-    // USER: Maybe add initialization of additional output histograms here.
+    // USER TODO: Maybe add initialization of additional output histograms here.
 
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);
     return EL::StatusCode::SUCCESS;
@@ -185,13 +172,14 @@ EL::StatusCode MyAnalysisAlgorithm :: initialize ()
     m_output_tree = new TTree(c_output_tree_name.c_str(), c_output_tree_name.c_str());
 
     // Declare branches
-    m_output_tree->Branch("ph_n", &m_ph_n);
-    m_output_tree->Branch("ph_pt", &m_ph_pt);
+    m_output_tree->Branch("ph_n",       &o_ph_n);
+    m_output_tree->Branch("ph_pt",      &o_ph_pt);
     // USER TODO: Add more variables here.
 
     m_output_tree->SetDirectory(wk()->getOutputFile(c_output_stream_name.c_str()));
 
     // Just being careful to set the initial values the same as they are reset.
+    CHECK(clear_cache_variables());
     CHECK(clear_output_variables());
 
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);
@@ -227,6 +215,7 @@ EL::StatusCode MyAnalysisAlgorithm :: execute ()
     }
 
     // clean-up
+    CHECK(clear_cache_variables());
     CHECK(clear_output_variables());
     xAOD::TStore* store = wk()->xaodStore();
     store->clear();
@@ -305,14 +294,30 @@ EL::StatusCode MyAnalysisAlgorithm :: histFinalize ()
 //============================================================================
 
 //-----------------------------------------------------------------------------
+EL::StatusCode MyAnalysisAlgorithm :: clear_cache_variables()
+{
+    const char *FUNC_NAME = "clear_cache_variables";
+    if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
+
+    // TODO: Add more variables here.
+    m_event         = 0;
+    m_store         = 0;
+    m_event_info    = 0;
+
+    if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);
+    return EL::StatusCode::SUCCESS;
+}
+
+
+//-----------------------------------------------------------------------------
 EL::StatusCode MyAnalysisAlgorithm :: clear_output_variables()
 {
     const char *FUNC_NAME = "clear_output_variables";
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
     // USER TODO: Add more variables here.
-    m_ph_n = 0;
-    m_ph_pt.clear();
+    o_ph_n          = 0;
+    o_ph_pt         .clear();
 
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);
     return EL::StatusCode::SUCCESS;
@@ -329,9 +334,13 @@ EL::StatusCode MyAnalysisAlgorithm :: preprocess_event()
     n_weights_processed += 1.0; // TODO
     h_cutflow->Fill(1); // all
 
-    // USER TODO: Write.
-    //xAOD::TEvent* event = wk()->xaodEvent();
+    m_event = wk()->xaodEvent();
+    m_store = wk()->xaodStore();
+    
+    // Get EventInfo
+    EL_RETURN_CHECK(FUNC_NAME, m_event->retrieve(m_event_info, "EventInfo"));  
 
+    // USER TODO: Write.
 
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);
     return EL::StatusCode::SUCCESS;
@@ -390,11 +399,10 @@ EL::StatusCode MyAnalysisAlgorithm :: process_event()
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
     // USER TODO: Write.
-    //xAOD::TEvent* event = wk()->xaodEvent();
     
     // USER TODO: Do some calculations event-by-event here.
-    m_ph_n = 1; // TODO
-    m_ph_pt.push_back(100.0); // TODO
+    o_ph_n = 1; // TODO
+    o_ph_pt.push_back(100.0); // TODO
     
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);
     return EL::StatusCode::SUCCESS;
@@ -438,16 +446,22 @@ EL::StatusCode MyAnalysisAlgorithm :: write_event()
 //-----------------------------------------------------------------------------
 bool MyAnalysisAlgorithm :: is_mc()
 {
-    xAOD::TEvent* event = wk()->xaodEvent();
-    
-    const xAOD::EventInfo* eventInfo = 0;
-    EL_RETURN_CHECK("execute",event->retrieve( eventInfo, "EventInfo"));  
+    const char *FUNC_NAME = "is_mc";
+    if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
-    // check if the event is Monte Carlo
-    if( eventInfo->eventType(xAOD::EventInfo::IS_SIMULATION) )
-        return true;
+    if(m_event_info != 0)
+    {
+        // check if the event is Monte Carlo
+        if( m_event_info->eventType(xAOD::EventInfo::IS_SIMULATION) )
+            return true;
+    }
+    else
+    {
+        Error(FUNC_NAME, "m_event_info == 0, returning is_mc()=false");
+    }
 
-    return false; // TODO
+    if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);
+    return false;
 }
 
 
