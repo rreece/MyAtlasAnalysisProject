@@ -42,9 +42,18 @@ class MyAnalysisAlgorithm : public MyAnalysisBaseAlgorithm
         virtual bool user_check_skim();
         virtual EL::StatusCode user_finalize();
 
+        ///////////////////////////////////////////////////////////////////////
+        // variables that don't get filled at submission time should be
+        // protected from being sent from the submission node to the worker
+        // node (done by the //!)
+        //     public:
+        //         Tree *myTree;  //!
+        //         TH1  *myHist;  //!
+        ///////////////////////////////////////////////////////////////////////
+
         // other private variables and caches (m_*)
-        xAOD::PhotonContainer*      m_photons;
-        xAOD::ShallowAuxContainer*  m_photons_aux;
+        xAOD::PhotonContainer*      m_photons;        //!
+        xAOD::ShallowAuxContainer*  m_photons_aux;    //!
 
         // varialbles for the output ntuple (o_*)
         int                 o_ph_n;             //!
