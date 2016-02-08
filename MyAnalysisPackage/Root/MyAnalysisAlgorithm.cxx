@@ -118,7 +118,8 @@ EL::StatusCode MyAnalysisAlgorithm :: user_preprocess_event()
     const char* FUNC_NAME = "user_preprocess_event";
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
-    // USER TODO: Do basic setup event-by-event.
+    // USER TODO: Do whatever basic setup event-by-event you need to do to be
+    // able to check the preskim after this.
 
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);
     return EL::StatusCode::SUCCESS;
@@ -168,7 +169,8 @@ EL::StatusCode MyAnalysisAlgorithm :: user_process_event()
 //-----------------------------------------------------------------------------
 bool MyAnalysisAlgorithm :: user_check_skim()
 {
-    // USER TODO: Write a skim condition.
+    // USER TODO: Write a skim condition. Events passing this will be in the
+    // output ntuple.
     return o_ph_n >= 2;
 }
 
@@ -179,7 +181,7 @@ EL::StatusCode MyAnalysisAlgorithm :: user_finalize()
     const char* FUNC_NAME = "user_finalize";
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
-    // USER TODO: Optional.  For example, delete tools.
+    // USER: Optional. For example, delete tools.
     // SAFE_DELETE( m_my_tool );
 
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);

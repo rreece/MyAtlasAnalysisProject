@@ -65,6 +65,15 @@ class MyAnalysisBaseAlgorithm : public EL::Algorithm
 
         // protected helper methods (provided to derived classes privately)
         bool is_mc();
+
+        ///////////////////////////////////////////////////////////////////////
+        // variables that don't get filled at submission time should be
+        // protected from being sent from the submission node to the worker
+        // node (done by the //!)
+        //     public:
+        //         Tree *myTree;  //!
+        //         TH1  *myHist;  //!
+        ///////////////////////////////////////////////////////////////////////
         
         // protected handels (m_*)
         xAOD::TEvent*           m_event;        //!
@@ -92,15 +101,6 @@ class MyAnalysisBaseAlgorithm : public EL::Algorithm
         bool check_quality();
         bool check_preskim();
         bool check_skim();
-
-        ///////////////////////////////////////////////////////////////////////
-        // variables that don't get filled at submission time should be
-        // protected from being sent from the submission node to the worker
-        // node (done by the //!)
-        //     public:
-        //         Tree *myTree;  //!
-        //         TH1  *myHist;  //!
-        ///////////////////////////////////////////////////////////////////////
 
         // private counters (n_*)
         unsigned long long  n_events_processed;  //! 

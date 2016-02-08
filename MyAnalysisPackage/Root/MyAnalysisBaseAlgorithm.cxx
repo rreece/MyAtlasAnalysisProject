@@ -385,7 +385,6 @@ EL::StatusCode MyAnalysisBaseAlgorithm :: clear_cache_variables()
     const char* FUNC_NAME = "clear_cache_variables";
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
-    // TODO: Add more variables here.
     m_event         = 0;
     m_store         = 0;
     m_event_info    = 0;
@@ -528,28 +527,28 @@ EL::StatusCode MyAnalysisBaseAlgorithm :: write_event()
 //-----------------------------------------------------------------------------
 bool MyAnalysisBaseAlgorithm :: check_grl()
 {
-    return true; // TODO
+    return true; // TODO: implement and make configurable
 }
 
 
 //-----------------------------------------------------------------------------
 bool MyAnalysisBaseAlgorithm :: check_trigger()
 {
-    return true; // TODO
+    return true; // TODO: implement and make configurable
 }
 
 
 //-----------------------------------------------------------------------------
 bool MyAnalysisBaseAlgorithm :: check_vertex()
 {
-    return true; // TODO
+    return true; // TODO: implement and make configurable
 }
 
 
 //-----------------------------------------------------------------------------
 bool MyAnalysisBaseAlgorithm :: check_quality()
 {
-    return true; // TODO
+    return true; // TODO: implement and make configurable
 }
 
 
