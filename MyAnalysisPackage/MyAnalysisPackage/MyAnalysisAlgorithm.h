@@ -23,12 +23,13 @@ class MyAnalysisAlgorithm : public MyAnalysisBaseAlgorithm
 {
     //-------------------------------------------------------------------------
     public:
-    
+
         // standard constructor
         MyAnalysisAlgorithm ();
 
     //-------------------------------------------------------------------------
     private:
+
         // methods classes deriving from MyAnalysisBaseAlgorithm must implement
         virtual EL::StatusCode user_initialize_hists();
         virtual EL::StatusCode user_declare_branches(TTree* tree);
@@ -36,10 +37,10 @@ class MyAnalysisAlgorithm : public MyAnalysisBaseAlgorithm
         virtual EL::StatusCode user_clear_output_variables();
         virtual EL::StatusCode user_initialize();
         virtual EL::StatusCode user_preprocess_event();
-        virtual EL::StatusCode user_process_event();
-        virtual EL::StatusCode user_finalize();
         virtual bool user_check_preskim();
+        virtual EL::StatusCode user_process_event();
         virtual bool user_check_skim();
+        virtual EL::StatusCode user_finalize();
 
         // other private variables and caches (m_*)
         xAOD::PhotonContainer*      m_photons;
