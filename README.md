@@ -32,5 +32,7 @@ See also
 -------------------------------------------------------------------------------
 
 -   <https://twiki.cern.ch/twiki/bin/view/AtlasComputing/SoftwareTutorialxAODAnalysisInROOT>
+-   <https://twiki.cern.ch/twiki/bin/view/AtlasProtected/SusyObjectDefintions>
+-   <https://twiki.cern.ch/twiki/bin/view/AtlasProtected/SUSYToolsV6>
 
 
