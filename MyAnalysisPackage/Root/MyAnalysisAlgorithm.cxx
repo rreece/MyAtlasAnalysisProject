@@ -16,6 +16,7 @@
 #include "TH1F.h"
 
 // ATLAS framework
+#include "EventLoop/Worker.h"
 #include "SUSYTools/SUSYObjDef_xAOD.h"
 #include "xAODEgamma/PhotonContainer.h"
 #include "xAODEgamma/PhotonAuxContainer.h"
@@ -160,6 +161,7 @@ EL::StatusCode MyAnalysisAlgorithm :: user_process_event()
         o_ph_phi    .push_back( photon->phi() );
         o_ph_n++;
     }
+    wk()->skipEvent();
 
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);
     return EL::StatusCode::SUCCESS;
