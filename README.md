@@ -11,9 +11,12 @@ ATLAS experiment at CERN.
 Getting started
 -------------------------------------------------------------------------------
 
-Compiling:
+Setup:
 
     source setup.sh
+
+Compiling:
+
     rc clean
     rc find_packages
     rc compile
