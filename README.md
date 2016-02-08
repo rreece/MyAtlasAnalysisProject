@@ -14,7 +14,7 @@ of data in a flat (not xAOD) output ntuple for further analysis.
 Users should mainly have to implement something like `MyAnalysisAlgorithm`
 and its functions, inheritting the basic helpers and overhead from
 `MyAnalysisBaseAlgorithm`, which should not require much if any edits.
-Please see the comments marked `USER TODO` in `MyAnalysisPackage/MyAnalysisAlgorithm.h`
+Please see the comments marked "`USER TODO`" in `MyAnalysisPackage/MyAnalysisAlgorithm.h`
 and `Root/MyAnalysisAlgorithm.cxx`.
 
 
