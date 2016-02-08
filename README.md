@@ -7,6 +7,16 @@ ATLAS experiment at CERN.
 -   author:  Ryan Reece <ryan.reece@cern.ch>
 -   created: Feb 3, 2016
 
+This package helps users quickly get a framework up and running for reading xAODs,
+making corrections with ATLAS SUSYTools, and saving so custom sub-set of data
+in a flat (not xAOD) output ntuple for further analysis.
+
+Users should mainly have to implement something like `MyAnalysisAlgorithm`
+and its functions, inheritting the basic helpers and overhead from
+`MyAnalysisBaseAlgorithm`, which should not require much if any edits.
+Please see the comments marked `USER TODO` in `MyAnalysisPackage/MyAnalysisAlgorithm.h`
+and `Root/MyAnalysisAlgorithm.cxx`.
+
 
 Getting started
 -------------------------------------------------------------------------------
