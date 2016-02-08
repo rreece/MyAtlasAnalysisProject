@@ -172,6 +172,7 @@ EL::StatusCode MyAnalysisBaseAlgorithm :: initialize ()
 
     // Let's check the number of events in our xAOD
     Info(FUNC_NAME, "Number of events in the input = %lli", event->getEntries() ); //print long long int
+    Info(FUNC_NAME, "is_mc() = %i", is_mc() );
 
     // Initialize output trees.
     m_output_tree = new TTree(c_output_tree_name.c_str(), c_output_tree_name.c_str());
@@ -317,16 +318,20 @@ bool MyAnalysisBaseAlgorithm :: is_mc()
     const char* FUNC_NAME = "is_mc";
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
-    if(m_event_info != 0)
+    if(m_event_info == 0)
     {
-        // check if the event is Monte Carlo
-        if( m_event_info->eventType(xAOD::EventInfo::IS_SIMULATION) )
-            return true;
+        AOD_CHECK(FUNC_NAME, wk()->xaodEvent()->retrieve(m_event_info, "EventInfo"));  
     }
-    else
+
+    if(m_event_info == 0)
     {
         Error(FUNC_NAME, "m_event_info == 0, returning is_mc()=false");
+        return false;
     }
+
+    // check if the event is Monte Carlo
+    if( m_event_info->eventType(xAOD::EventInfo::IS_SIMULATION) )
+        return true;
 
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);
     return false;
