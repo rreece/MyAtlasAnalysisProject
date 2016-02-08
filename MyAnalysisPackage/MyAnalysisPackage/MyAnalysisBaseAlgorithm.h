@@ -46,6 +46,7 @@ class MyAnalysisBaseAlgorithm : public EL::Algorithm
         bool        c_debug;
         std::string c_output_stream_name;
         std::string c_output_tree_name;
+        bool        c_setup_susy_tools;
 
     //-------------------------------------------------------------------------
     protected:

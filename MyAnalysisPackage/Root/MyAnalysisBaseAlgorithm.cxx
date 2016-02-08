@@ -46,6 +46,7 @@ MyAnalysisBaseAlgorithm :: MyAnalysisBaseAlgorithm ()
     c_debug              = false;
     c_output_stream_name = "output";
     c_output_tree_name   = "mytree";
+    c_setup_susy_tools   = true;
 
     n_events_processed  = 0; 
     n_weights_processed = 0.0;
@@ -77,9 +78,8 @@ EL::StatusCode MyAnalysisBaseAlgorithm :: setupJob (EL::Job& job)
     // activated/deactivated when you add/remove the algorithm from your
     // job, which may or may not be of value to you.
 
-    //Let's initialize the algorithm to use the xAODRootAccess package
+    // Let's initialize the algorithm to use the xAODRootAccess package
     job.useXAOD ();
-    //xAOD::Init();  //call before opening first file
 
     AOD_CHECK(FUNC_NAME, xAOD::Init() ); //call before opening first file
     EL::OutputStream stream(c_output_stream_name.c_str());
@@ -185,7 +185,8 @@ EL::StatusCode MyAnalysisBaseAlgorithm :: initialize ()
     EL_CHECK(FUNC_NAME, clear_cache_variables());
     EL_CHECK(FUNC_NAME, clear_output_variables());
 
-    EL_CHECK(FUNC_NAME, setup_susy_tools());
+    if(c_setup_susy_tools)
+        EL_CHECK(FUNC_NAME, setup_susy_tools());
 
     EL_CHECK(FUNC_NAME, user_initialize());
 
