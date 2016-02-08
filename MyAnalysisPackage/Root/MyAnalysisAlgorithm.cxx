@@ -37,7 +37,7 @@ MyAnalysisAlgorithm :: MyAnalysisAlgorithm ()
 //-----------------------------------------------------------------------------
 EL::StatusCode MyAnalysisAlgorithm :: user_initialize_hists()
 {
-    const char *FUNC_NAME = "user_initialize_hists";
+    const char* FUNC_NAME = "user_initialize_hists";
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
     // USER: Optionally declare any output histograms you want to make.
@@ -52,7 +52,7 @@ EL::StatusCode MyAnalysisAlgorithm :: user_initialize_hists()
 //-----------------------------------------------------------------------------
 EL::StatusCode MyAnalysisAlgorithm :: user_declare_branches(TTree* tree)
 {
-    const char *FUNC_NAME = "user_declare_branches";
+    const char* FUNC_NAME = "user_declare_branches";
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
     tree->Branch("ph_n",       &o_ph_n);
@@ -69,7 +69,7 @@ EL::StatusCode MyAnalysisAlgorithm :: user_declare_branches(TTree* tree)
 //-----------------------------------------------------------------------------
 EL::StatusCode MyAnalysisAlgorithm :: user_clear_cache_variables()
 {
-    const char *FUNC_NAME = "user_clear_cache_variables";
+    const char* FUNC_NAME = "user_clear_cache_variables";
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
     SAFE_DELETE( m_photons );
@@ -84,7 +84,7 @@ EL::StatusCode MyAnalysisAlgorithm :: user_clear_cache_variables()
 //-----------------------------------------------------------------------------
 EL::StatusCode MyAnalysisAlgorithm :: user_clear_output_variables()
 {
-    const char *FUNC_NAME = "user_clear_output_variables";
+    const char* FUNC_NAME = "user_clear_output_variables";
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
     // You must clear the output variables event-by-event.
@@ -102,7 +102,7 @@ EL::StatusCode MyAnalysisAlgorithm :: user_clear_output_variables()
 //-----------------------------------------------------------------------------
 EL::StatusCode MyAnalysisAlgorithm :: user_initialize()
 {
-    const char *FUNC_NAME = "user_initialize";
+    const char* FUNC_NAME = "user_initialize";
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
     // USER: Initialize tools here.
@@ -115,7 +115,7 @@ EL::StatusCode MyAnalysisAlgorithm :: user_initialize()
 //-----------------------------------------------------------------------------
 EL::StatusCode MyAnalysisAlgorithm :: user_preprocess_event()
 {
-    const char *FUNC_NAME = "user_preprocess_event";
+    const char* FUNC_NAME = "user_preprocess_event";
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
     // USER TODO: Do basic setup event-by-event.
@@ -136,7 +136,7 @@ bool MyAnalysisAlgorithm :: user_check_preskim()
 //-----------------------------------------------------------------------------
 EL::StatusCode MyAnalysisAlgorithm :: user_process_event()
 {
-    const char *FUNC_NAME = "user_process_event";
+    const char* FUNC_NAME = "user_process_event";
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
     // USER TODO: Do main calculations event-by-event here.
@@ -176,7 +176,7 @@ bool MyAnalysisAlgorithm :: user_check_skim()
 //-----------------------------------------------------------------------------
 EL::StatusCode MyAnalysisAlgorithm :: user_finalize()
 {
-    const char *FUNC_NAME = "user_finalize";
+    const char* FUNC_NAME = "user_finalize";
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
     // USER TODO: Optional.  For example, delete tools.

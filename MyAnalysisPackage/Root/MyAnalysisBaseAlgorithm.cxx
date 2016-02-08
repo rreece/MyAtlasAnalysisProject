@@ -66,7 +66,7 @@ MyAnalysisBaseAlgorithm :: MyAnalysisBaseAlgorithm ()
 //-----------------------------------------------------------------------------
 EL::StatusCode MyAnalysisBaseAlgorithm :: setupJob (EL::Job& job)
 {
-    const char *FUNC_NAME = "setupJob";
+    const char* FUNC_NAME = "setupJob";
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
     // Here you put code that sets up the job on the submission object
@@ -93,7 +93,7 @@ EL::StatusCode MyAnalysisBaseAlgorithm :: setupJob (EL::Job& job)
 //-----------------------------------------------------------------------------
 EL::StatusCode MyAnalysisBaseAlgorithm :: histInitialize ()
 {
-    const char *FUNC_NAME = "histInitialize";
+    const char* FUNC_NAME = "histInitialize";
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
     // Here you do everything that needs to be done at the very
@@ -124,7 +124,7 @@ EL::StatusCode MyAnalysisBaseAlgorithm :: histInitialize ()
 //-----------------------------------------------------------------------------
 EL::StatusCode MyAnalysisBaseAlgorithm :: fileExecute ()
 {
-    const char *FUNC_NAME = "fileExecute";
+    const char* FUNC_NAME = "fileExecute";
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
     // Here you do everything that needs to be done exactly once for every
@@ -140,7 +140,7 @@ EL::StatusCode MyAnalysisBaseAlgorithm :: fileExecute ()
 //-----------------------------------------------------------------------------
 EL::StatusCode MyAnalysisBaseAlgorithm :: changeInput (bool firstFile)
 {
-    const char *FUNC_NAME = "changeInput";
+    const char* FUNC_NAME = "changeInput";
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s(%i) start", FUNC_NAME, firstFile);
 
     // Here you do everything you need to do when we change input files,
@@ -157,7 +157,7 @@ EL::StatusCode MyAnalysisBaseAlgorithm :: changeInput (bool firstFile)
 //-----------------------------------------------------------------------------
 EL::StatusCode MyAnalysisBaseAlgorithm :: initialize ()
 {
-    const char *FUNC_NAME = "initialize";
+    const char* FUNC_NAME = "initialize";
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
     // Here you do everything that you need to do after the first input
@@ -197,7 +197,7 @@ EL::StatusCode MyAnalysisBaseAlgorithm :: initialize ()
 //-----------------------------------------------------------------------------
 EL::StatusCode MyAnalysisBaseAlgorithm :: execute ()
 {
-    const char *FUNC_NAME = "execute";
+    const char* FUNC_NAME = "execute";
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
     // Here you do everything that needs to be done on every single
@@ -235,7 +235,7 @@ EL::StatusCode MyAnalysisBaseAlgorithm :: execute ()
 //-----------------------------------------------------------------------------
 EL::StatusCode MyAnalysisBaseAlgorithm :: postExecute ()
 {
-    const char *FUNC_NAME = "postExecute";
+    const char* FUNC_NAME = "postExecute";
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
     // Here you do everything that needs to be done after the main event
@@ -250,7 +250,7 @@ EL::StatusCode MyAnalysisBaseAlgorithm :: postExecute ()
 //-----------------------------------------------------------------------------
 EL::StatusCode MyAnalysisBaseAlgorithm :: finalize ()
 {
-    const char *FUNC_NAME = "finalize";
+    const char* FUNC_NAME = "finalize";
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
     // This method is the mirror image of initialize(), meaning it gets
@@ -274,7 +274,7 @@ EL::StatusCode MyAnalysisBaseAlgorithm :: finalize ()
 //-----------------------------------------------------------------------------
 EL::StatusCode MyAnalysisBaseAlgorithm :: histFinalize ()
 {
-    const char *FUNC_NAME = "histFinalize";
+    const char* FUNC_NAME = "histFinalize";
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
     // This method is the mirror image of histInitialize(), meaning it
@@ -313,7 +313,7 @@ EL::StatusCode MyAnalysisBaseAlgorithm :: histFinalize ()
 //-----------------------------------------------------------------------------
 bool MyAnalysisBaseAlgorithm :: is_mc()
 {
-    const char *FUNC_NAME = "is_mc";
+    const char* FUNC_NAME = "is_mc";
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
     if(m_event_info != 0)
@@ -339,7 +339,7 @@ bool MyAnalysisBaseAlgorithm :: is_mc()
 //-----------------------------------------------------------------------------
 EL::StatusCode MyAnalysisBaseAlgorithm :: setup_susy_tools()
 {
-    const char *FUNC_NAME = "setup_susy_tools";
+    const char* FUNC_NAME = "setup_susy_tools";
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
     Info(FUNC_NAME, "Setting up SUSYTools...");
@@ -381,7 +381,7 @@ EL::StatusCode MyAnalysisBaseAlgorithm :: setup_susy_tools()
 //-----------------------------------------------------------------------------
 EL::StatusCode MyAnalysisBaseAlgorithm :: clear_cache_variables()
 {
-    const char *FUNC_NAME = "clear_cache_variables";
+    const char* FUNC_NAME = "clear_cache_variables";
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
     // TODO: Add more variables here.
@@ -399,7 +399,7 @@ EL::StatusCode MyAnalysisBaseAlgorithm :: clear_cache_variables()
 //-----------------------------------------------------------------------------
 EL::StatusCode MyAnalysisBaseAlgorithm :: clear_output_variables()
 {
-    const char *FUNC_NAME = "clear_output_variables";
+    const char* FUNC_NAME = "clear_output_variables";
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
     EL_CHECK(FUNC_NAME, user_clear_output_variables());
@@ -412,7 +412,7 @@ EL::StatusCode MyAnalysisBaseAlgorithm :: clear_output_variables()
 //-----------------------------------------------------------------------------
 EL::StatusCode MyAnalysisBaseAlgorithm :: preprocess_event()
 {
-    const char *FUNC_NAME = "preprocess_event";
+    const char* FUNC_NAME = "preprocess_event";
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
     n_events_processed++;
@@ -435,7 +435,7 @@ EL::StatusCode MyAnalysisBaseAlgorithm :: preprocess_event()
 //-----------------------------------------------------------------------------
 EL::StatusCode MyAnalysisBaseAlgorithm :: check_preskim_event(bool& passes)
 {
-    const char *FUNC_NAME = "check_preskim_event";
+    const char* FUNC_NAME = "check_preskim_event";
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
     // {"all", "GRL", "trigger", "vertex", "quality", "preskim", "skim"};
@@ -480,7 +480,7 @@ EL::StatusCode MyAnalysisBaseAlgorithm :: check_preskim_event(bool& passes)
 //-----------------------------------------------------------------------------
 EL::StatusCode MyAnalysisBaseAlgorithm :: process_event()
 {
-    const char *FUNC_NAME = "process_event";
+    const char* FUNC_NAME = "process_event";
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
     EL_CHECK(FUNC_NAME, user_process_event());
@@ -493,7 +493,7 @@ EL::StatusCode MyAnalysisBaseAlgorithm :: process_event()
 //-----------------------------------------------------------------------------
 EL::StatusCode MyAnalysisBaseAlgorithm :: check_skim_event(bool& passes)
 {
-    const char *FUNC_NAME = "check_skim_event";
+    const char* FUNC_NAME = "check_skim_event";
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
     passes = check_skim();
@@ -510,7 +510,7 @@ EL::StatusCode MyAnalysisBaseAlgorithm :: check_skim_event(bool& passes)
 //-----------------------------------------------------------------------------
 EL::StatusCode MyAnalysisBaseAlgorithm :: write_event()
 {
-    const char *FUNC_NAME = "write_event";
+    const char* FUNC_NAME = "write_event";
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s start", FUNC_NAME);
 
     // Fill the output tree
