@@ -161,7 +161,8 @@ EL::StatusCode MyAnalysisAlgorithm :: user_process_event()
         o_ph_phi    .push_back( photon->phi() );
         o_ph_n++;
     }
-    wk()->skipEvent();
+
+//    wk()->skipEvent(); // does this work? doesn't seem so.
 
     if(c_debug) Info(FUNC_NAME, "DEBUG: %s end", FUNC_NAME);
     return EL::StatusCode::SUCCESS;
