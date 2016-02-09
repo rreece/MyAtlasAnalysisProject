@@ -12,6 +12,8 @@
 // ROOT includes
 #include "TFile.h"
 #include "TTree.h"
+#include "TChain.h"
+#include "TSystem.h"
 
 // ATLAS framework
 #include "xAODRootAccess/Init.h"
@@ -22,8 +24,6 @@
 #include "EventLoop/Job.h"
 #include "EventLoop/DirectDriver.h"
 #include "SampleHandler/DiskListLocal.h"
-#include <TSystem.h>
-#include "TChain.h"
 
 // this package
 #include "MyAnalysisPackage/MyAnalysisAlgorithm.h"
@@ -55,12 +55,14 @@ int main( int argc, char* argv[] )
     //const char* inputFilePath = gSystem->ExpandPathName("/afs/cern.ch/work/m/mbaugh/public/NP_Photon_Analysis/mc15_13TeV.402429.MadGraphPythia8EvtGen_A14NNPDF23LO_GMSB_SPS8_300_2.merge.DAOD_STDM2.e4378_s2608_r6869_r6282_p2421/");
     //SH::ScanDir().filePattern("DAOD_*.root*").scan(sh, inputFilePath);
 
+    // Get the input files from the command-line arguments.
     TChain chain("CollectionTree");
     for(int i=2; i<argc; i++)
     {
         chain.Add(argv[i]);
     }
 
+    // Build a Sample from the temporary TChain and add it to the SampleHandler.
     SH::Sample* tmp_sample = SH::makeFromTChain(sample_name.c_str(), chain);
     sh.add(tmp_sample);
 

@@ -350,27 +350,33 @@ EL::StatusCode MyAnalysisBaseAlgorithm :: setup_susy_tools()
 
     Info(FUNC_NAME, "Setting up SUSYTools...");
 
+    std::string common_path = gSystem->ExpandPathName("$ROOTCOREBIN/data/MyAnalysisPackage/");
+
     m_SUSYTool = new ST::SUSYObjDef_xAOD("SUSYObjDef_xAOD");
-    AOD_CHECK(FUNC_NAME, m_SUSYTool->setProperty( "ConfigFile",  "$ROOTCOREBIN/data/MyAnalysisPackage/SUSYTools_MyAnalysis.conf" ));
+
+    // basic config file
+    AOD_CHECK(FUNC_NAME, m_SUSYTool->setProperty( "ConfigFile",  common_path + "SUSYTools_MyAnalysis.conf" ));
     m_SUSYTool->msg().setLevel( MSG::ERROR);  // MSG::ERROR MSG::DEBUG
 
+    // SUSYTools hard-coded configurable properties
     bool isAFII=false;
     ST::SettingDataSource data_source = is_mc() ? (isAFII ? ST::AtlfastII : ST::FullSim) : ST::Data;
     AOD_CHECK(FUNC_NAME, m_SUSYTool->setProperty("DataSource", data_source ));
     AOD_CHECK(FUNC_NAME, m_SUSYTool->setProperty("DoPhotonOR", true));
     //AOD_CHECK(m_SUSYTool->setProperty("METTauTerm", ""));
 
-    std::string common_path = gSystem->ExpandPathName("$ROOTCOREBIN/data/MyAnalysisPackage/");
+    // luminosity calc files
     std::vector<std::string> lcalc_files;
     lcalc_files.push_back( common_path + "ilumicalc_histograms_HLT_2g50_loose_276262-282421.root" );
-
-    std::vector<std::string> prw_files;
-    prw_files.push_back( common_path + "merged_prw.root" );
-
-    AOD_CHECK(FUNC_NAME, m_SUSYTool->setProperty("PRWDefaultChannel", 407013 ));
-    AOD_CHECK(FUNC_NAME, m_SUSYTool->setProperty("PRWConfigFiles", prw_files ));
     AOD_CHECK(FUNC_NAME, m_SUSYTool->setProperty("PRWLumiCalcFiles", lcalc_files ));
 
+    // pile-up reweighting files
+    std::vector<std::string> prw_files;
+    prw_files.push_back( common_path + "merged_prw.root" );
+    AOD_CHECK(FUNC_NAME, m_SUSYTool->setProperty("PRWConfigFiles", prw_files ));
+    AOD_CHECK(FUNC_NAME, m_SUSYTool->setProperty("PRWDefaultChannel", 407013 ));
+
+    // initialize SUSYTools
     if(m_SUSYTool->initialize().isFailure()) {
         Error(FUNC_NAME, "Failed to initialise tools in SUSYToolsInit()..." );
         Error(FUNC_NAME, "Exiting..." );
